@@ -29,6 +29,38 @@ export const getAvailability = async (req: Request, res: Response) => {
 };
 
 // Create a new booking
+// export const createBookingController = async (req: Request, res: Response) => {
+//   try {
+//     const validationResult = bookingSchema.safeParse(req.body);
+//     if (!validationResult.success) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Validation error",
+//         errorMessages: validationResult.error.errors,
+//       });
+//     }
+//     const booking = await createBooking(req.body);
+//     res.status(201).json({
+//       success: true,
+//       message: "Booking created successfully",
+//       data: booking,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: (error as Error).message });
+//   }
+// };
+
+const calculatePayableAmount = (
+  startTime: string,
+  endTime: string,
+  pricePerHour: number
+) => {
+  const start = new Date(`1970-01-01T${startTime}:00Z`).getTime();
+  const end = new Date(`1970-01-01T${endTime}:00Z`).getTime();
+  const durationHours = (end - start) / (1000 * 60 * 60);
+  return durationHours * pricePerHour;
+};
+
 export const createBookingController = async (req: Request, res: Response) => {
   try {
     const validationResult = bookingSchema.safeParse(req.body);
@@ -39,7 +71,39 @@ export const createBookingController = async (req: Request, res: Response) => {
         errorMessages: validationResult.error.errors,
       });
     }
-    const booking = await createBooking(req.body);
+
+    const userId = (req as AuthenticatedRequest).user.id;
+    const { startTime, endTime, pricePerHour, ...restBookingData } = req.body;
+
+    if (!startTime || !endTime || !pricePerHour) {
+      return res.status(400).json({
+        success: false,
+        message: "startTime, endTime, and pricePerHour are required",
+      });
+    }
+
+    const payableAmount = calculatePayableAmount(
+      startTime,
+      endTime,
+      pricePerHour
+    );
+
+    if (isNaN(payableAmount)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payable amount calculation",
+      });
+    }
+
+    const bookingData = {
+      ...restBookingData,
+      user: userId,
+      startTime,
+      endTime,
+      payableAmount,
+    };
+
+    const booking = await createBooking(bookingData);
     res.status(201).json({
       success: true,
       message: "Booking created successfully",

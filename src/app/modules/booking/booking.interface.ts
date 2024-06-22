@@ -1,10 +1,10 @@
-import { Types } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IBooking {
-  date: Date;
-  startTime: Date;
-  endTime: Date;
-  user: Types.ObjectId;
+  date: string;
+  startTime: string;
+  endTime: string;
+  user: mongoose.Schema.Types.ObjectId;
   facility: Types.ObjectId;
   payableAmount: number;
   isBooked: "confirmed" | "unconfirmed" | "canceled";

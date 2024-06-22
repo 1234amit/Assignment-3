@@ -3,9 +3,9 @@ import { IBooking } from "./booking.interface";
 
 const bookingSchema = new Schema<IBooking>(
   {
-    date: { type: Date, required: true },
-    startTime: { type: Date, required: true },
-    endTime: { type: Date, required: true },
+    date: { type: String, required: true },
+    startTime: { type: String, required: true },
+    endTime: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     facility: { type: Schema.Types.ObjectId, ref: "Facility", required: true },
     payableAmount: { type: Number, required: true },
